@@ -1,7 +1,16 @@
+"""
+Proof-of-concept for sample indexing
+
+DROPS THE COLLECTION ON RUN
+
+Finds all samples, calculates embeddings and saves into collection.
+
+Slow as hell, but only needs to be done once.
+"""
+
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from dotenv import load_dotenv
-import numpy as np
 import laion_clap
 import fnmatch
 import os

@@ -1,10 +1,11 @@
 """
-Proof-of-concept for searching sample correlation.
+Proof-of-concept for searching samples by string search query.
 
-Queries the database for samples similar to a selected one.
-Does not go through the whole directory structure, only queries the vector store.
+Queries the database for samples similar to a text embedding.
+Does not go through sample files, only through metadata in a MongoDB cluster.
 
 More optimised search than Splice.
+At least, should be.
 """
 
 from pymongo.mongo_client import MongoClient
@@ -33,9 +34,9 @@ model = laion_clap.CLAP_Module(enable_fusion=False)
 model.load_ckpt(model_id=1)
 print("Model connected")
 
-audio_embed = model.get_audio_embedding_from_filelist(
+text_embed = model.get_text_embedding(
     x=[
-        "./data/SAMPLES/ACTUAL_LIBRARY/DRUMS/SNARE/PITCHED/snare break remake.wav",
+        "Pitched future bass snare",
     ],
     use_tensor=False,
 )[0].tolist()
@@ -44,7 +45,7 @@ res = audiosamples.aggregate(
     [
         {
             "$vectorSearch": {
-                "queryVector": audio_embed,
+                "queryVector": text_embed,
                 "path": "embedding",
                 "numCandidates": 30,
                 "index": "vector_index",
