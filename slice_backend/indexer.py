@@ -48,7 +48,7 @@ This will take A LONG TIME.
             logger.log(Log.TRACE, f"Processing {absolute_path}", "indexer")
 
             embedding = model.embed_audio(absolute_path)
-            db["slice"]["samples"].insert_one(
+            db["slice"]["audiosamples"].insert_one(
                 {"path": absolute_path, "name": name, "embedding": embedding}
             )
 
