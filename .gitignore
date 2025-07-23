@@ -1,3 +1,6 @@
 .env
 data/SAMPLES/*
+__pycache__
+.pytest_cache
+instance
 
