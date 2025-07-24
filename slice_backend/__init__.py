@@ -10,10 +10,10 @@ from slice_backend.model import Model
 def create_app(test_config=None):
     app = Flask(os.getenv("FLASK_NAME", ""))
     config = Config.from_dotenv()
-    master_connection = create_connection(config.get_DB_URI())
-    logger = Logger(config.get_VERBOSITY(), config.get_LOG_FILE(), master_connection)
+    db = create_connection(config.get_DB_URI())
+    logger = Logger(config.get_VERBOSITY(), config.get_LOG_FILE(), db)
     model = Model(logger, 1)
-    Indexer.check_index(master_connection, logger, config.get_SAMPLE_DIR(), model)
+    index = Indexer.create_index(db, logger, config.get_SAMPLE_DIR(), model)
 
     @app.route("/test")
     def hello():

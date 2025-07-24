@@ -1,6 +1,7 @@
 from enum import IntEnum
 from datetime import datetime
 import sys
+from threading import Lock
 
 from pymongo import MongoClient
 
@@ -39,11 +40,19 @@ def get_verbosity(name: str | int) -> Log:
 
 
 class Logger:
+    """
+    Safe for multithread use.
+
+    Kinda.
+    """
+
     def __init__(
         self, verbosity: Log, file: str | None, db_connection: MongoClient | None = None
     ) -> None:
         self.verbosity = verbosity
         self.path = file
+        self.__mutex = Lock()
+
         if file:
             self.file = open(file, "a")
         else:
@@ -65,21 +74,22 @@ class Logger:
             else:
                 text = f"[{datetime.now().isoformat()}] {_component}[{verbosity.name}] {message}"
 
-            if self.file:
-                self.file.write(text + "\n")
+            with self.__mutex:
+                if self.file:
+                    self.file.write(text + "\n")
 
-            if self.db_connection:
-                self.db_connection["slice"]["logs"].insert_one(
-                    {
-                        "date": datetime.now(),
-                        "verbosity": int(verbosity),
-                        "verbosity_str": verbosity.name,
-                        "content": message,
-                        "component": component,
-                    }
-                )
+                if self.db_connection:
+                    self.db_connection["slice"]["logs"].insert_one(
+                        {
+                            "date": datetime.now(),
+                            "verbosity": int(verbosity),
+                            "verbosity_str": verbosity.name,
+                            "content": message,
+                            "component": component,
+                        }
+                    )
 
-            if verbosity >= Log.WARN:
-                print(text, file=sys.stderr)
-            else:
-                print(text, file=sys.stdout)
+                if verbosity >= Log.WARN:
+                    print(text, file=sys.stderr)
+                else:
+                    print(text, file=sys.stdout)

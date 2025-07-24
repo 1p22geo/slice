@@ -1,6 +1,7 @@
 from pymongo.mongo_client import MongoClient
 
 
+from slice_backend.index import Index
 from slice_backend.logger import Log, Logger
 from slice_backend.model import Model
 from slice_backend.walker import dirwalk
@@ -8,14 +9,18 @@ from slice_backend.walker import dirwalk
 
 class Indexer:
     @staticmethod
-    def check_index(
+    def create_index(
         db: MongoClient, logger: Logger, sample_dir: str, model: Model
     ) -> None:
+        """
+        Can only be called in the master thread, does not work multithreaded
+        """
+
         logger.log(Log.TRACE, "Checking for sample index database", "indexer")
 
         if "audiosamples" not in db["slice"].list_collection_names():
             logger.log(Log.WARN, "Sample collection not found", "indexer")
-            Indexer.create_index(db, logger, sample_dir, model)
+            Indexer.new_index(db, logger, sample_dir, model)
         else:
             estimate_count = db["slice"]["audiosamples"].estimated_document_count()
 
@@ -27,10 +32,12 @@ class Indexer:
                 )
             else:
                 logger.log(Log.WARN, "Sample collection exits but is empty", "indexer")
-                Indexer.create_index(db, logger, sample_dir, model)
+                Indexer.new_index(db, logger, sample_dir, model)
+
+        return Index(logger, sample_dir, model)
 
     @staticmethod
-    def create_index(
+    def new_index(
         db: MongoClient, logger: Logger, sample_dir: str, model: Model
     ) -> None:
         logger.log(
