@@ -82,7 +82,7 @@ class Config:
 
         c = Config(
             ensure_env("MONGODB_URI"),
-            ensure_env("SAMPLES_DIR"),
+            ensure_env("SAMPLES_DIR").rstrip("/"),
             default_env("VERBOSITY", "INFO"),
             default_env("LOG_FILE", None),
             default_env("ORIGIN_URL", "http://127.0.0.1:5000"),

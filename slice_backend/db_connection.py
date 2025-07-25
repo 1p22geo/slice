@@ -12,7 +12,6 @@ def create_connection(uri: str):
 
     try:
         client.admin.command("ping")
-        print("DB connected")
     except Exception as e:
         print(e)
         print("DB dead")

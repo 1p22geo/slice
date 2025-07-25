@@ -86,6 +86,10 @@ class Logger:
                     self.file.write(text + "\n")
 
                 if self.db_connection:
+                    self.db_connection.admin.command(
+                        "ping"
+                    )  # For some reason, without this, the database hangs on connection close.
+                    # If it (kinda) works, don't touch it.
                     self.db_connection["slice"]["logs"].insert_one(
                         {
                             "date": datetime.now(),
