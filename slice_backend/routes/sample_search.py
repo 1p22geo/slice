@@ -1,13 +1,14 @@
 from slice_backend.db_connection import create_connection
 from slice_backend.logger import Log, Logger
 from flask import Flask, jsonify, request
-
+from flask_cors import cross_origin
 from slice_backend.index import Index
 from slice_backend.search_query import SearchQuery
 
 
 def route_sample_search(app: Flask, logger: Logger, index: Index, db_uri: str):
-    @app.post("/api/samples/search")
+    @app.route("/api/samples/search", methods=["POST"])
+    @cross_origin()
     def _route_post_samples_search():
         data = request.get_json(force=True)
 

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title></title>
+    <script src="../js/config.js"></script>
+    <script src="https://cdn.tailwindcss.com/"></script>
+    <script defer src="../js/search.js"></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+  </head>
+  <body>
+    <header class="w-screen flex flex-col items-center">
+      <div
+        class="flex flex-row mt-12"
+        x-data="{
+        query:new URL(window.location.href).searchParams.get('query')
+        }"
+      >
+        <input
+          class="rounded-full p-4 pr-24 w-[1200px] outline"
+          type="text"
+          placeholder="ringing future bass snare"
+          x-model="query"
+          x-on:keyup.enter="submitQuery(query)"
+        />
+        <div
+          class="bg-gray-700 rounded-full w-12 h-12 grid place-content-center -ml-14 mt-1 cursor-pointer"
+          x-on:click="submitQuery(query)"
+        >
+          <svg
+            class="w-8 h-8"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M16.6725 16.6412L21 21M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z"
+              stroke="#fff"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+      </div>
+    </header>
+    <div
+      class="flex flex-col items-center w-full mt-24"
+      x-data="{
+        samples:[
+      ],
+        resultCount: 0,
+        loading: true
+      }"
+      x-init="
+      request().then(json=>{
+        samples = json.results;
+        resultCount = json.resultCount;
+        loading = false;
+      })
+      "
+    >
+      <h2 class="text-xl text-gray-600" x-show="loading" x-transition>
+        Loading your samples
+      </h2>
+      <div x-show="!loading" x-transition class="w-full">
+        <h2 class="self-left text-gray-600 ml-8">
+          <span x-text="resultCount"></span> samples loaded
+        </h2>
+        <div class="flex flex-row gap-4 p-12">
+          <div class="flex flex-col items-left">
+            <template x-for="sample in samples">
+              <h2 x-text="sample.name" class="p-2"></h2>
+            </template>
+          </div>
+          <div class="flex flex-col items-left">
+            <template x-for="sample in samples">
+              <audio controls
+                x-on:mouseenter="$el.play()"
+                x-on:mouseleave="$el.pause()"
+              >
+                <!--                         yeeeeeeee, production-ready code                  -->
+                <source x-bind:src="AUDIO_URL+sample.path.replace('#', '%23')" type="audio/ogg" />
+              </audio>
+            </template>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

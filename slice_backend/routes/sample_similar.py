@@ -1,6 +1,7 @@
 from bson import ObjectId
 from slice_backend.db_connection import create_connection
 from slice_backend.logger import Log, Logger
+from flask_cors import cross_origin
 from flask import Flask, jsonify, request
 from slice_backend.index import Index
 
@@ -8,7 +9,8 @@ from slice_backend.index import Index
 def route_sample_similar(
     app: Flask, logger: Logger, index: Index, db_uri: str, sample_dir: str
 ):
-    @app.post("/api/samples/similar")
+    @app.route("/api/samples/similar", methods=["POST"])
+    @cross_origin()
     def _route_post_samples_similar():
         data = request.get_json(force=True)
 

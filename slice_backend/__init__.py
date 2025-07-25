@@ -1,16 +1,20 @@
 from flask import Flask
+from flask_cors import CORS
 import os
 from slice_backend.config import Config
 from slice_backend.db_connection import create_connection
 from slice_backend.indexer import Indexer
 from slice_backend.logger import Log, Logger
 from slice_backend.model import Model
+from slice_backend.routes.cors_resources import cors_resources
 from slice_backend.routes.sample_search import route_sample_search
 from slice_backend.routes.sample_similar import route_sample_similar
 
 
 def create_app(test_config=None):
     app = Flask(os.getenv("FLASK_NAME", ""))
+    CORS(app, resources=cors_resources)
+    app.config["CORS_HEADERS"] = "Content-Type"
     config = Config.from_dotenv()
     print("Connecting DB for logs")
     db = create_connection(config.get_DB_URI())
