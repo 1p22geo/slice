@@ -6,6 +6,7 @@ from slice_backend.indexer import Indexer
 from slice_backend.logger import Log, Logger
 from slice_backend.model import Model
 from slice_backend.routes.sample_search import route_sample_search
+from slice_backend.routes.sample_similar import route_sample_similar
 
 
 def create_app(test_config=None):
@@ -18,6 +19,9 @@ def create_app(test_config=None):
     index = Indexer.create_index(db, logger, config.get_SAMPLE_DIR(), model)
 
     route_sample_search(app, logger, index, config.get_DB_URI())
+    route_sample_similar(
+        app, logger, index, config.get_DB_URI(), config.get_SAMPLE_DIR()
+    )
 
     @app.route("/test")
     def hello():
