@@ -90,6 +90,11 @@
           </div>
           <div class="flex flex-col items-left">
             <template x-for="sample in samples">
+              <a x-bind:href="AUDIO_URL+sample.path.replace('#', '%23')" class="font-ultralight text-gray-600 p-2" download>download</a>
+            </template>
+          </div>
+          <div class="flex flex-col items-left">
+            <template x-for="sample in samples">
               <a x-bind:href="'/similar?id=' + sample._id" class="font-ultralight text-gray-600 p-2">find similar</a>
             </template>
           </div>
