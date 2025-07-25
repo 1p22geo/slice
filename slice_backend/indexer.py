@@ -1,17 +1,19 @@
+from pymongo.errors import OperationFailure
 from pymongo.mongo_client import MongoClient
-
-
+from pymongo.operations import SearchIndexModel
 from slice_backend.index import Index
 from slice_backend.logger import Log, Logger
 from slice_backend.model import Model
 from slice_backend.walker import dirwalk
+import time
+import os
 
 
 class Indexer:
     @staticmethod
     def create_index(
         db: MongoClient, logger: Logger, sample_dir: str, model: Model
-    ) -> None:
+    ) -> Index:
         """
         Can only be called in the master thread, does not work multithreaded
         """
@@ -34,6 +36,13 @@ class Indexer:
                 logger.log(Log.WARN, "Sample collection exits but is empty", "indexer")
                 Indexer.new_index(db, logger, sample_dir, model)
 
+        index_list = list(
+            db["slice"]["audiosamples"].list_search_indexes("vector_index")
+        )
+        if not (len(index_list) and index_list[0].get("queryable") is True):
+            logger.log(Log.WARN, "Vector search index does not exist", "indexer")
+            Indexer.new_index(db, logger, sample_dir, model)
+
         return Index(logger, sample_dir, model)
 
     @staticmethod
@@ -51,6 +60,18 @@ This will take A LONG TIME.
             "indexer",
         )
 
+        logger.log(Log.LOG, "Dropping indexes", "indexer")
+        db["slice"]["audiosamples"].drop_indexes()
+        logger.log(Log.LOG, "Dropping search indexes", "indexer")
+        try:
+            db["slice"]["audiosamples"].drop_search_index("vector_index")
+        except OperationFailure:
+            logger.log(Log.LOG, "No indexes found", "indexer")
+        logger.log(Log.LOG, "Dropping collection (if any exists)", "indexer")
+        db["slice"]["audiosamples"].drop()
+
+        logger.log(Log.LOG, "Inserting data", "indexer")
+
         def process_sample(absolute_path: str, name: str):
             logger.log(Log.TRACE, f"Processing {absolute_path}", "indexer")
 
@@ -61,4 +82,45 @@ This will take A LONG TIME.
 
             logger.log(Log.LOG, f"Saved {absolute_path}", "indexer")
 
+        if not os.path.exists(sample_dir):
+            logger.log(
+                Log.CRITICAL, f"Sample path {sample_dir} DOES NOT EXIST", "indexer"
+            )
+            raise FileNotFoundError(sample_dir)
+
         dirwalk(sample_dir, process_sample)
+
+        logger.log(Log.LOG, "Configuring vector search index", "indexer")
+
+        search_index_model = SearchIndexModel(
+            definition={
+                "fields": [
+                    {
+                        "type": "vector",
+                        "numDimensions": 512,
+                        "path": "embedding",
+                        "similarity": "dotProduct",
+                    },
+                    # {"type": "filter", "path": "tags"},
+                ]
+            },
+            name="vector_index",
+            type="vectorSearch",
+        )
+
+        result = db["slice"]["audiosamples"].create_search_index(
+            model=search_index_model
+        )
+
+        logger.log(Log.INFO, f'New index building: "{result}"', "indexer")
+
+        logger.log(Log.LOG, "Polling new index", "indexer")
+
+        while True:
+            index_list = list(db["slice"]["audiosamples"].list_search_indexes(result))
+            if len(index_list) and index_list[0].get("queryable") is True:
+                break
+            logger.log(Log.TRACE, "Still not ready", "indexer")
+            time.sleep(5)
+
+        logger.log(Log.INFO, f'Index ready: "{result}"', "indexer")

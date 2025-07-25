@@ -57,13 +57,20 @@ class Logger:
             self.file = open(file, "a")
         else:
             self.file = None
+
+        if db_connection:
+            db_connection["slice"]["logs"].delete_many({})
+
         self.db_connection = db_connection
         self.log(Log.TRACE, "Log opened", "logger")
 
     def __del__(self):
+        print("Please don't start spamming ctrl-c and wait for the database to close")
         self.log(Log.TRACE, "Log closed", "logger")
         if self.file:
             self.file.close()
+        if self.db_connection:
+            self.db_connection.close()
 
     def log(self, verbosity: Log, message: str, component: str | None = None) -> None:
         message = message.strip()

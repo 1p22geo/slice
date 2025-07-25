@@ -48,12 +48,18 @@ class InsufficientDataException(Exception):
 
 class Config:
     def __init__(
-        self, DB_URI: str, SAMPLE_DIR: str, VERBOSITY: str, LOG_FILE: str | None
+        self,
+        DB_URI: str,
+        SAMPLE_DIR: str,
+        VERBOSITY: str,
+        LOG_FILE: str | None,
+        ORIGIN_URL: str,
     ) -> None:
         self.__DB_URI = DB_URI
         self.__SAMPLE_DIR = SAMPLE_DIR
         self.__VERBOSITY = get_verbosity(VERBOSITY)
         self.__LOG_FILE = LOG_FILE
+        self.__ORIGIN_URL = ORIGIN_URL
 
     def get_DB_URI(self) -> str:
         return self.__DB_URI
@@ -67,6 +73,9 @@ class Config:
     def get_VERBOSITY(self) -> Log:
         return self.__VERBOSITY
 
+    def get_ORIGIN_URL(self) -> str:
+        return self.__ORIGIN_URL
+
     @staticmethod
     def from_dotenv() -> Config:
         load_dotenv()
@@ -76,6 +85,7 @@ class Config:
             ensure_env("SAMPLES_DIR"),
             default_env("VERBOSITY", "INFO"),
             default_env("LOG_FILE", None),
+            default_env("ORIGIN_URL", "http://127.0.0.1:5000"),
         )
 
         return c

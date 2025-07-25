@@ -18,8 +18,7 @@ class Index:
         samples = db["slice"]["audiosamples"]
 
         text_embed = self.model.embed_text(query.query)
-
-        res = samples.samples.aggregate(
+        res = samples.aggregate(
             [
                 {
                     "$vectorSearch": {
@@ -42,6 +41,12 @@ class Index:
                 {"$limit": start + count},
                 {"$skip": start},
             ]
-        ).to_list(count)
+        ).to_list()
+
+        for sample in res:
+            sample["_id"] = str(sample["_id"])
+            sample["path"] = sample["path"].replace(self.sample_dir, "")
+            if not sample["path"].startswith("/"):
+                sample["path"] = "/" + sample["path"]
 
         return res
