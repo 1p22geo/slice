@@ -31,6 +31,7 @@
             type="text"
             placeholder="ringing future bass snare"
             x-model="query"
+            x-on:keyup.enter="submitQuery(query)"
           />
           <div
             class="bg-gray-700 rounded-full w-12 h-12 grid place-content-center -ml-14 mt-1 cursor-pointer"
