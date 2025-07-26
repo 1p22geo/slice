@@ -20,6 +20,12 @@ class Indexer:
 
         logger.log(Log.TRACE, "Checking for sample index database", "indexer")
 
+        if not os.path.exists(sample_dir):
+            logger.log(
+                Log.CRITICAL, f"Sample path {sample_dir} DOES NOT EXIST", "indexer"
+            )
+            raise FileNotFoundError(sample_dir)
+
         if "audiosamples" not in db["slice"].list_collection_names():
             logger.log(Log.WARN, "Sample collection not found", "indexer")
             Indexer.new_index(db, logger, sample_dir, model)
@@ -81,12 +87,6 @@ This will take A LONG TIME.
             )
 
             logger.log(Log.LOG, f"Saved {absolute_path}", "indexer")
-
-        if not os.path.exists(sample_dir):
-            logger.log(
-                Log.CRITICAL, f"Sample path {sample_dir} DOES NOT EXIST", "indexer"
-            )
-            raise FileNotFoundError(sample_dir)
 
         dirwalk(sample_dir, process_sample)
 
