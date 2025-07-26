@@ -1,4 +1,6 @@
+from typing import Collection
 from slice_backend.logger import Log, Logger
+from slice_backend.tags.tag import Tag
 
 
 def initTags(logger: Logger):
@@ -12,3 +14,7 @@ def initTags(logger: Logger):
 
     tags = [*drums, *fx, *instrum, *loops]
     return tags
+
+
+def assignTags(abs_path: str, sample_dir: str, tags: Collection[Tag]):
+    return [t for t in tags if t.check(abs_path, sample_dir)]

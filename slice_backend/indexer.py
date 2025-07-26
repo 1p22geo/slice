@@ -5,6 +5,7 @@ from pymongo.operations import SearchIndexModel
 from slice_backend.index import Index
 from slice_backend.logger import Log, Logger
 from slice_backend.model import Model
+from slice_backend.tags import assignTags
 from slice_backend.tags.tag import Tag
 from slice_backend.walker import dirwalk
 import time
@@ -26,6 +27,10 @@ class Indexer:
 
         logger.log(Log.TRACE, "Checking for sample index database", "indexer")
 
+        def rethink_your_life_choices():
+            # both the indexer should, and you, if you're redading this
+            Indexer.new_index(db, logger, sample_dir, model, tags)
+
         if not os.path.exists(sample_dir):
             logger.log(
                 Log.CRITICAL, f"Sample path {sample_dir} DOES NOT EXIST", "indexer"
@@ -34,7 +39,7 @@ class Indexer:
 
         if "audiosamples" not in db["slice"].list_collection_names():
             logger.log(Log.WARN, "Sample collection not found", "indexer")
-            Indexer.new_index(db, logger, sample_dir, model)
+            rethink_your_life_choices()
         else:
             estimate_count = db["slice"]["audiosamples"].estimated_document_count()
 
@@ -46,20 +51,24 @@ class Indexer:
                 )
             else:
                 logger.log(Log.WARN, "Sample collection exits but is empty", "indexer")
-                Indexer.new_index(db, logger, sample_dir, model)
+                rethink_your_life_choices()
 
         index_list = list(
             db["slice"]["audiosamples"].list_search_indexes("vector_index")
         )
         if not (len(index_list) and index_list[0].get("queryable") is True):
             logger.log(Log.WARN, "Vector search index does not exist", "indexer")
-            Indexer.new_index(db, logger, sample_dir, model)
+            rethink_your_life_choices()
 
         return Index(logger, sample_dir, model, tags)
 
     @staticmethod
     def new_index(
-        db: MongoClient, logger: Logger, sample_dir: str, model: Model
+        db: MongoClient,
+        logger: Logger,
+        sample_dir: str,
+        model: Model,
+        tags: Collection[Tag],
     ) -> None:
         logger.log(
             Log.INFO,
@@ -88,8 +97,14 @@ This will take A LONG TIME.
             logger.log(Log.TRACE, f"Processing {absolute_path}", "indexer")
 
             embedding = model.embed_audio(absolute_path)
+
             db["slice"]["audiosamples"].insert_one(
-                {"path": absolute_path, "name": name, "embedding": embedding}
+                {
+                    "path": absolute_path,
+                    "name": name,
+                    "embedding": embedding,
+                    "tags": [t.id for t in assignTags(absolute_path, sample_dir, tags)],
+                }
             )
 
             logger.log(Log.LOG, f"Saved {absolute_path}", "indexer")
@@ -107,7 +122,7 @@ This will take A LONG TIME.
                         "path": "embedding",
                         "similarity": "dotProduct",
                     },
-                    # {"type": "filter", "path": "tags"},
+                    {"type": "filter", "path": "tags"},
                 ]
             },
             name="vector_index",
