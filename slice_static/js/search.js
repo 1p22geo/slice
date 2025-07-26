@@ -30,3 +30,12 @@ async function fetchTags() {
   const json = await res.json();
   return json;
 }
+
+async function fetchBTags() {
+  const res = await fetch(`${API_URL}/api/tags/btags`, {
+    method: "GET",
+    mode: "cors",
+  });
+  const json = await res.json();
+  return json;
+}
