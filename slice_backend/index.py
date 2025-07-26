@@ -1,14 +1,19 @@
+from typing import Collection
 from pymongo import MongoClient
 from slice_backend.logger import Log, Logger
 from slice_backend.model import Model
 from slice_backend.search_query import SearchQuery
+from slice_backend.tags.tag import Tag
 
 
 class Index:
-    def __init__(self, logger: Logger, sample_dir: str, model: Model) -> None:
+    def __init__(
+        self, logger: Logger, sample_dir: str, model: Model, tags: Collection[Tag]
+    ) -> None:
         self.logger = logger
         self.sample_dir = sample_dir
         self.model = model
+        self.tags = tags
 
     def searchSamples(
         self, db: MongoClient, query: SearchQuery, start: int = 0, count: int = 25

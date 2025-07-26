@@ -1,9 +1,11 @@
+from typing import Collection
 from pymongo.errors import OperationFailure
 from pymongo.mongo_client import MongoClient
 from pymongo.operations import SearchIndexModel
 from slice_backend.index import Index
 from slice_backend.logger import Log, Logger
 from slice_backend.model import Model
+from slice_backend.tags.tag import Tag
 from slice_backend.walker import dirwalk
 import time
 import os
@@ -12,7 +14,11 @@ import os
 class Indexer:
     @staticmethod
     def create_index(
-        db: MongoClient, logger: Logger, sample_dir: str, model: Model
+        db: MongoClient,
+        logger: Logger,
+        sample_dir: str,
+        model: Model,
+        tags: Collection[Tag],
     ) -> Index:
         """
         Can only be called in the master thread, does not work multithreaded
@@ -49,7 +55,7 @@ class Indexer:
             logger.log(Log.WARN, "Vector search index does not exist", "indexer")
             Indexer.new_index(db, logger, sample_dir, model)
 
-        return Index(logger, sample_dir, model)
+        return Index(logger, sample_dir, model, tags)
 
     @staticmethod
     def new_index(

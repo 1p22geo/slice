@@ -9,6 +9,8 @@ from slice_backend.model import Model
 from slice_backend.routes.cors_resources import cors_resources
 from slice_backend.routes.sample_search import route_sample_search
 from slice_backend.routes.sample_similar import route_sample_similar
+from slice_backend.routes.tags import route_tags
+from slice_backend.tags import initTags
 
 
 def create_app(test_config=None):
@@ -20,12 +22,15 @@ def create_app(test_config=None):
     db = create_connection(config.get_DB_URI())
     logger = Logger(config.get_VERBOSITY(), config.get_LOG_FILE(), db)
     model = Model(logger, 1)
-    index = Indexer.create_index(db, logger, config.get_SAMPLE_DIR(), model)
+    tags = initTags(logger)
+    index = Indexer.create_index(db, logger, config.get_SAMPLE_DIR(), model, tags)
 
     route_sample_search(app, logger, index, config.get_DB_URI())
     route_sample_similar(
         app, logger, index, config.get_DB_URI(), config.get_SAMPLE_DIR()
     )
+
+    route_tags(app, logger, index, config.get_DB_URI(), config.get_SAMPLE_DIR())
 
     @app.route("/test")
     def hello():
