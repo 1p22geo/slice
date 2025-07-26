@@ -1,3 +1,4 @@
+import datetime
 from typing import Collection
 from pymongo.errors import OperationFailure
 from pymongo.mongo_client import MongoClient
@@ -9,7 +10,7 @@ from slice_backend.logger import Log, Logger
 from slice_backend.model import Model
 from slice_backend.tags import assignTags
 from slice_backend.tags.tag import Tag
-from slice_backend.walker import dirwalk
+from slice_backend.walker import countfiles, dirwalk
 import time
 import os
 
@@ -97,7 +98,13 @@ This will take A LONG TIME.
 
         logger.log(Log.LOG, "Inserting data", "indexer")
 
+        start = datetime.datetime.now()
+        total = countfiles(sample_dir, True)
+        count = 0
+
         def process_sample(absolute_path: str, name: str):
+            nonlocal count, total, start  # since when is that a thing wtf
+
             logger.log(Log.TRACE, f"Processing {absolute_path}", "indexer")
 
             embedding = model.embed_audio(absolute_path)
@@ -113,6 +120,16 @@ This will take A LONG TIME.
             )
 
             logger.log(Log.LOG, f"Saved {absolute_path}", "indexer")
+            count += 1
+
+            if count % 10 == 0:
+                dt = (datetime.datetime.now() - start) / count
+                done = start + dt * total
+                done = done.isoformat()
+
+                percentage = round((count / total) * 100)
+                logger.log(Log.TRACE, f"{percentage}% done, {count}/{total}", "indexer")
+                logger.log(Log.TRACE, f"Should be done by {done}", "indexer")
 
         dirwalk(sample_dir, process_sample)
 
