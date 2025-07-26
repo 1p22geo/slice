@@ -2,6 +2,7 @@ from typing import Collection
 from pymongo.errors import OperationFailure
 from pymongo.mongo_client import MongoClient
 from pymongo.operations import SearchIndexModel
+from slice_backend.btags.btag import BTag
 from slice_backend.index import Index
 from slice_backend.logger import Log, Logger
 from slice_backend.model import Model
@@ -20,6 +21,7 @@ class Indexer:
         sample_dir: str,
         model: Model,
         tags: Collection[Tag],
+        btags: Collection[BTag],
     ) -> Index:
         """
         Can only be called in the master thread, does not work multithreaded
@@ -29,7 +31,7 @@ class Indexer:
 
         def rethink_your_life_choices():
             # both the indexer should, and you, if you're redading this
-            Indexer.new_index(db, logger, sample_dir, model, tags)
+            Indexer.new_index(db, logger, sample_dir, model, tags, btags)
 
         if not os.path.exists(sample_dir):
             logger.log(
@@ -60,7 +62,7 @@ class Indexer:
             logger.log(Log.WARN, "Vector search index does not exist", "indexer")
             rethink_your_life_choices()
 
-        return Index(logger, sample_dir, model, tags)
+        return Index(logger, sample_dir, model, tags, btags)
 
     @staticmethod
     def new_index(
@@ -69,6 +71,7 @@ class Indexer:
         sample_dir: str,
         model: Model,
         tags: Collection[Tag],
+        btags: Collection[BTag],
     ) -> None:
         logger.log(
             Log.INFO,

@@ -1,5 +1,6 @@
 .env
 data/SAMPLES/*
+data/BTAGS/*
 __pycache__
 .pytest_cache
 instance

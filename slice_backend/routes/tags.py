@@ -4,7 +4,7 @@ from flask import Flask, jsonify
 from slice_backend.index import Index
 
 
-def route_tags(app: Flask, logger: Logger, index: Index, db_uri: str, sample_dir: str):
+def route_tags(app: Flask, logger: Logger, index: Index):
     @app.route("/api/tags/tags", methods=["GET"])
     @cross_origin()
     def _route_get_tags():

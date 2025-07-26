@@ -51,12 +51,14 @@ class Config:
         self,
         DB_URI: str,
         SAMPLE_DIR: str,
+        BTAGS_DIR: str,
         VERBOSITY: str,
         LOG_FILE: str | None,
         ORIGIN_URL: str,
     ) -> None:
         self.__DB_URI = DB_URI
         self.__SAMPLE_DIR = SAMPLE_DIR
+        self.__BTAGS_DIR = BTAGS_DIR
         self.__VERBOSITY = get_verbosity(VERBOSITY)
         self.__LOG_FILE = LOG_FILE
         self.__ORIGIN_URL = ORIGIN_URL
@@ -66,6 +68,9 @@ class Config:
 
     def get_SAMPLE_DIR(self) -> str:
         return self.__SAMPLE_DIR
+
+    def get_BTAGS_DIR(self) -> str:
+        return self.__BTAGS_DIR
 
     def get_LOG_FILE(self) -> str | None:
         return self.__LOG_FILE
@@ -83,6 +88,7 @@ class Config:
         c = Config(
             ensure_env("MONGODB_URI"),
             ensure_env("SAMPLES_DIR").rstrip("/"),
+            ensure_env("BTAGS_DIR").rstrip("/"),
             default_env("VERBOSITY", "INFO"),
             default_env("LOG_FILE", None),
             default_env("ORIGIN_URL", "http://127.0.0.1:5000"),
