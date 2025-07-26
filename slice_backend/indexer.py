@@ -2,6 +2,7 @@ from typing import Collection
 from pymongo.errors import OperationFailure
 from pymongo.mongo_client import MongoClient
 from pymongo.operations import SearchIndexModel
+from slice_backend.btags import assignBTags
 from slice_backend.btags.btag import BTag
 from slice_backend.index import Index
 from slice_backend.logger import Log, Logger
@@ -107,6 +108,7 @@ This will take A LONG TIME.
                     "name": name,
                     "embedding": embedding,
                     "tags": [t.id for t in assignTags(absolute_path, sample_dir, tags)],
+                    "btags": assignBTags(btags, embedding=embedding),
                 }
             )
 
@@ -125,7 +127,8 @@ This will take A LONG TIME.
                         "path": "embedding",
                         "similarity": "dotProduct",
                     },
-                    {"type": "filter", "path": "tags"},
+                    {"type": "filter", "path": "estimated_document_counts"},
+                    *[{"type": "filter", "path": f"btags.{bt.id}"} for bt in btags],
                 ]
             },
             name="vector_index",

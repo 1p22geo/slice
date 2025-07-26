@@ -1,5 +1,5 @@
 import numpy as np
-
+from typing import List
 from slice_backend.btags.btag import BTag
 from slice_backend.model import Model
 from slice_backend.walker import dirwalk
@@ -38,7 +38,9 @@ class EmbeddingBTag(BTag):
         dirwalk(dir, add_embedding, True)
         return self.__total / self.__count
 
-    def get_value(self, sample: str):
+    def get_value(
+        self, abs_path: str | None = None, embedding: List[float] | None = None
+    ):
         # I am very proud of this algorythm.
         # I spent 30 minutes in Desmos cooking it up.
         # Please don't laugh when it inevitably breaks.
@@ -46,7 +48,7 @@ class EmbeddingBTag(BTag):
         P1 = self.__embedding_A
         P2 = self.__embedding_B
 
-        X = np.array(self.__model.embed_audio(sample))
+        X = np.array(self.__model.embed_audio(abs_path) if abs_path else embedding)
 
         delta = P2 - P1  # vector distance
         deltadiff = np.sqrt(delta.dot(delta))  # scalar distance between P1 and P2
