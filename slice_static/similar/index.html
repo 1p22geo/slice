@@ -44,26 +44,38 @@
           </div>
           <div class="flex flex-col items-left">
             <template x-for="sample in samples">
-              <audio controls
+              <audio
+                controls
                 x-on:mouseenter="$el.play()"
                 x-on:mouseleave="$el.pause()"
               >
                 <!--                         yeeeeeeee, production-ready code                  -->
-                <source x-bind:src="AUDIO_URL+sample.path.replace('#', '%23')" type="audio/ogg" />
+                <source
+                  x-bind:src="AUDIO_URL+sample.path.replace('#', '%23')"
+                  type="audio/ogg"
+                />
               </audio>
             </template>
           </div>
           <div class="flex flex-col items-left">
             <template x-for="sample in samples">
-              <a x-bind:href="AUDIO_URL+sample.path.replace('#', '%23')" class="font-ultralight text-gray-600 p-2" download>download</a>
+              <a
+                x-bind:href="AUDIO_URL+sample.path.replace('#', '%23')"
+                class="font-ultralight text-gray-600 p-2"
+                download
+                >download</a
+              >
             </template>
           </div>
           <div class="flex flex-col items-left">
             <template x-for="sample in samples">
-              <a x-bind:href="'/similar?id=' + sample._id" class="font-ultralight text-gray-600 p-2">find similar</a>
+              <a
+                x-bind:href="'/similar?id=' + sample._id"
+                class="font-ultralight text-gray-600 p-2"
+                >find similar</a
+              >
             </template>
           </div>
-
         </div>
       </div>
     </div>

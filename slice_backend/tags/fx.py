@@ -3,6 +3,11 @@ from slice_backend.tags.tag import Tag
 
 tags = [
     Tag(
+        "SLICE:SAMPLE",
+        "Sample",
+        lambda abs_path, sample_dir: True,  # Just for testing
+    ),
+    Tag(
         "SLICE:FX",
         "SFX",
         lambda abs_path, sample_dir: "fx" in abs_path.replace(sample_dir, "").lower(),

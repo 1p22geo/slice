@@ -35,6 +35,12 @@ class Index:
                         "index": "vector_index",
                         "limit": start + count,
                         "exact": False,
+                        "filter": {
+                            "$and": [
+                                *[{"tags": {"$eq": tag}} for tag in query.tags],
+                                {"tags": {"$eq": "SLICE:SAMPLE"}},
+                            ]
+                        },
                     }
                 },
                 {

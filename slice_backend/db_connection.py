@@ -8,7 +8,14 @@ class DatabaseError(Exception):
 
 
 def create_connection(uri: str):
-    client = MongoClient(uri, server_api=ServerApi("1"))
+    client = MongoClient(
+        uri,
+        server_api=ServerApi("1"),
+        maxPoolSize=50,
+        socketTimeoutMS=5000,
+        connectTimeoutMS=5000,
+        minPoolSize=3,
+    )
 
     try:
         client.admin.command("ping")

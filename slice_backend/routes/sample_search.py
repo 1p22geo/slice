@@ -12,16 +12,21 @@ def route_sample_search(app: Flask, logger: Logger, index: Index, db_uri: str):
     def _route_post_samples_search():
         data = request.get_json(force=True)
 
+        if not data["query"]:
+            response = jsonify({"error": "Please search for something."})
+            response.status_code = 400
+            return response
+
         query = SearchQuery()
         query.addQuery(data["query"])
-        for tag in data["tags"]:
-            query.addTag(tag["name"], tag["selected"])
-        for btag in data["btags"]:
-            query.addBTag(btag["name"], btag["value"])
-
         logger.log(
             Log.LOG, f'Request recieved, search "{query.query}"', "/api/samples/search"
         )
+        for tag in data["tags"]:
+            logger.log(Log.TRACE, f"Adding tag {tag['id']}", "/api/samples/search")
+            query.addTag(tag["id"])
+        for btag in data["btags"]:
+            query.addBTag(btag["id"], btag["value"])
 
         db = create_connection(db_uri)
 

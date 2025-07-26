@@ -13,15 +13,30 @@
     ></script>
   </head>
   <body>
-    <header class="w-screen flex flex-col items-center">
-      <div
-        class="flex flex-row mt-12"
-        x-data="{
-        query:new URL(window.location.href).searchParams.get('query')
-        }"
-      >
+    <header
+      class="w-screen flex flex-col items-center px-72"
+      x-data="{
+        query: (new URL(window.location.href).searchParams.get('query')) ?? '',
+        tcount: 0,
+        tags: false,
+        addedTags: JSON.parse(new URL(window.location.href).searchParams.get('tags')) ?? [],
+        tquery: '',
+        get filteredTags() {
+          return (this.tags && this.tquery) ? this.tags.filter(
+            i => (i.name.toLowerCase().search(this.tquery.toLowerCase())>=0)&&(this.addedTags.indexOf(i)<0)
+          ).slice(0, 50) : []
+        }
+      }"
+      x-init="
+        fetchTags().then(json=>{
+          tags = json.results;
+          tcount = json.resultCount;
+        })
+        "
+    >
+      <div class="flex flex-row mt-12 w-full">
         <input
-          class="rounded-full p-4 pr-24 w-[1200px] outline"
+          class="rounded-full p-4 pr-24 w-full outline"
           type="text"
           placeholder="ringing future bass snare"
           x-model="query"
@@ -29,7 +44,7 @@
         />
         <div
           class="bg-gray-700 rounded-full w-12 h-12 grid place-content-center -ml-14 mt-1 cursor-pointer"
-          x-on:click="submitQuery(query)"
+          x-on:click="submitQuery(query, addedTags)"
         >
           <svg
             class="w-8 h-8"
@@ -47,9 +62,104 @@
           </svg>
         </div>
       </div>
-      <div class="grid grid-cols-2 w-full mt-12">
+      <div class="flex flex-row flex-wrap-reverse gap-2 p-4 align-start">
+        <template x-for="tag in addedTags" :key="tag.id">
+          <div
+            class="bg-gray-700 text-white p-1 px-2 font-sm rounded-full text-sm flex flex-row items-center cursor-pointer"
+            x-on:click="
+              //         |                      our greatest nemesis
+              //         |                      showed up in my code
+              //         |
+              //         |                      seldom would such an
+              //         |                      acquaintance be seen
+              //         |                      and present themself
+              //         |                      within a JS function
+              //         |
+              //         |                      how serendipitous...
+              //         |
+              //         |                      the line lengths are
+              //         |                      a little added bonus
+              //         |
+              //         |                      use a monospace font
+              //        \ /
+              //         v
+              addedTags.splice(addedTags.indexOf(tag), 1)
+
+              // I literally spent 30 minutes writing a fixed-line-length poem about a company which i hate,
+              // and a product which I decided to make an open-source clone of.
+
+              // Instead of actually working on it.
+
+              // That's what I call procrastination.
+              
+            "
+          >
+            <span x-text="tag.name"></span>
+            <svg
+              width="25px"
+              height="25px"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M7 17L16.8995 7.10051"
+                stroke="#fff"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M7 7.00001L16.8995 16.8995"
+                stroke="#fff"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+        </template>
+      </div>
+      <div class="grid grid-cols-2 w-full mt-8 gap-4">
         <div class="flex flex-col items-center">
           <h2 class="text-2xl">Tags</h2>
+          <input
+            x-model="tquery"
+            placeholder="Search here..."
+            class="rounded-full p-2 w-full outline m-4"
+          />
+          <div class="flex flex-row flex-wrap gap-2 p-4 align-start">
+            <template x-for="tag in filteredTags" :key="tag.id">
+              <div
+                class="bg-gray-700 text-white p-1 px-2 font-sm rounded-full text-sm flex flex-row items-center cursor-pointer"
+                x-on:click="
+                  addedTags.push(tag);
+                  tquery = '';
+                "
+              >
+                <span x-text="tag.name"></span>
+                <svg
+                  class="rotate-45"
+                  width="25px"
+                  height="25px"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M7 17L16.8995 7.10051"
+                    stroke="#fff"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M7 7.00001L16.8995 16.8995"
+                    stroke="#fff"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </div>
+            </template>
+          </div>
         </div>
         <div class="flex flex-col items-center">
           <h2 class="text-2xl">Character</h2>
@@ -62,24 +172,43 @@
         samples:[
       ],
         resultCount: 0,
-        loading: true
+        loading: true,
+        error: false,
       }"
       x-init="
       request().then(json=>{
+        if(json.error){
+          error = json.error;
+          loading = false;
+        }
+        else{
         samples = json.results;
         resultCount = json.resultCount;
         loading = false;
+      }
       })
       "
     >
       <h2 class="text-xl text-gray-600" x-show="loading" x-transition>
         Loading your samples
       </h2>
-      <div x-show="!loading" x-transition class="w-full">
-        <h2 class="self-left text-gray-600 ml-8">
+
+      <h2
+        class="text-xl text-gray-600"
+        x-show="error"
+        x-transition
+        x-text="error"
+      ></h2>
+
+      <div
+        x-show="resultCount"
+        x-transition
+        class="w-full flex flex-col items-center"
+      >
+        <h2 class="self-start text-gray-600 ml-8 w-fit">
           <span x-text="resultCount"></span> samples loaded
         </h2>
-        <div class="flex flex-row gap-4 p-12">
+        <div class="flex flex-row gap-12 p-12">
           <div class="flex flex-col items-left">
             <template x-for="sample in samples">
               <h2 x-text="sample.name" class="p-2"></h2>
@@ -87,26 +216,38 @@
           </div>
           <div class="flex flex-col items-left">
             <template x-for="sample in samples">
-              <audio controls
+              <audio
+                controls
                 x-on:mouseenter="$el.play()"
                 x-on:mouseleave="$el.pause()"
               >
                 <!--                         yeeeeeeee, production-ready code                  -->
-                <source x-bind:src="AUDIO_URL+sample.path.replace('#', '%23')" type="audio/ogg" />
+                <source
+                  x-bind:src="AUDIO_URL+sample.path.replace('#', '%23')"
+                  type="audio/ogg"
+                />
               </audio>
             </template>
           </div>
           <div class="flex flex-col items-left">
             <template x-for="sample in samples">
-              <a x-bind:href="AUDIO_URL+sample.path.replace('#', '%23')" class="font-ultralight text-gray-600 p-2" download>download</a>
+              <a
+                x-bind:href="AUDIO_URL+sample.path.replace('#', '%23')"
+                class="font-ultralight text-gray-600 p-2"
+                download
+                >download</a
+              >
             </template>
           </div>
           <div class="flex flex-col items-left">
             <template x-for="sample in samples">
-              <a x-bind:href="'/similar?id=' + sample._id" class="font-ultralight text-gray-600 p-2">find similar</a>
+              <a
+                x-bind:href="'/similar?id=' + sample._id"
+                class="font-ultralight text-gray-600 p-2"
+                >find similar</a
+              >
             </template>
           </div>
-
         </div>
       </div>
     </div>
