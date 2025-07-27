@@ -16,7 +16,7 @@ tags = [
         "SLICE:FX:AMBIENC",
         "Ambience",
         lambda abs_path, sample_dir: "drone" in abs_path.replace(sample_dir, "").lower()
-        or "ambience" in abs_path.replace(sample_dir, "").lower()
+        or "ambienc" in abs_path.replace(sample_dir, "").lower()
         or "atmos" in abs_path.replace(sample_dir, "").lower(),
     ),
     Tag(

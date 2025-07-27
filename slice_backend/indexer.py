@@ -112,37 +112,43 @@ This will take A LONG TIME.
             active_tags = assignTags(absolute_path, sample_dir, tags)
             active_btags = assignBTags(btags, embedding=embedding)
 
-            db["slice"]["audiosamples"].insert_one(
-                {
-                    "path": absolute_path,
-                    "display": {
-                        "name": name,
-                        "tags": [
-                            {"id": tag.id, "name": tag.name} for tag in active_tags
-                        ],
-                        "btags": [
-                            {
-                                "id": tag.id,
-                                "name": tag.name,
-                                "name_A": tag.name_A,
-                                "name_B": tag.name_B,
-                                "value": value,
-                            }
-                            for tag, value in active_btags.items()
-                        ],
-                    },
-                    "index": {
-                        "embedding": embedding,
-                        "tags": [t.id for t in active_tags],
-                        "btags": {k.id: v for k, v in active_btags.items()},
-                    },
-                }
-            )
+            while True:
+                try:
+                    db["slice"]["audiosamples"].insert_one(
+                        {
+                            "path": absolute_path,
+                            "display": {
+                                "name": name,
+                                "tags": [
+                                    {"id": tag.id, "name": tag.name}
+                                    for tag in active_tags
+                                ],
+                                "btags": [
+                                    {
+                                        "id": tag.id,
+                                        "name": tag.name,
+                                        "name_A": tag.name_A,
+                                        "name_B": tag.name_B,
+                                        "value": value,
+                                    }
+                                    for tag, value in active_btags.items()
+                                ],
+                            },
+                            "index": {
+                                "embedding": embedding,
+                                "tags": [t.id for t in active_tags],
+                                "btags": {k.id: v for k, v in active_btags.items()},
+                            },
+                        }
+                    )
+                    break
+                except:
+                    continue
 
             logger.log(Log.LOG, f"Saved {absolute_path}", "indexer")
             count += 1
 
-            if count % 10 == 0:
+            if count % 100 == 0:
                 dt = (datetime.datetime.now() - start) / count
                 done = start + dt * total
                 done = done.isoformat()

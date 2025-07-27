@@ -12,8 +12,8 @@ def create_connection(uri: str):
         uri,
         server_api=ServerApi("1"),
         maxPoolSize=50,
-        socketTimeoutMS=5000,
-        connectTimeoutMS=5000,
+        socketTimeoutMS=60000,
+        connectTimeoutMS=60000,
         minPoolSize=3,
     )
 
