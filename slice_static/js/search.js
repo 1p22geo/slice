@@ -1,7 +1,8 @@
-function submitQuery(query, tags) {
+function submitQuery(query, tags, btags) {
   const url = new URL("/search", window.location.origin);
   url.searchParams.append("query", query);
   url.searchParams.append("tags", JSON.stringify(tags ?? []));
+  url.searchParams.append("btags", JSON.stringify(btags ?? []));
   window.location.replace(url);
 }
 
@@ -10,8 +11,12 @@ async function request() {
   const res = await fetch(`${API_URL}/api/samples/search`, {
     body: JSON.stringify({
       query: query,
-      tags: JSON.parse(new URL(window.location.href).searchParams.get('tags')) ?? [],
-      btags: [],
+      tags:
+        JSON.parse(new URL(window.location.href).searchParams.get("tags")) ??
+        [],
+      btags:
+        JSON.parse(new URL(window.location.href).searchParams.get("btags")) ??
+        [],
       start: 0,
       count: 10,
     }),

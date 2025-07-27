@@ -26,7 +26,12 @@ def route_sample_search(app: Flask, logger: Logger, index: Index, db_uri: str):
             logger.log(Log.TRACE, f"Adding tag {tag['id']}", "/api/samples/search")
             query.addTag(tag["id"])
         for btag in data["btags"]:
-            query.addBTag(btag["id"], btag["value"])
+            logger.log(
+                Log.TRACE,
+                f"Adding btag {btag['id']} = {btag['value']}",
+                "/api/samples/search",
+            )
+            query.addBTag(btag["id"], float(btag["value"]))
 
         db = create_connection(db_uri)
 

@@ -31,12 +31,13 @@ class Index:
         text_embed = self.model.embed_text(query.query)
 
         self.logger.log(Log.DEBUG, "Executing aggregation", "index")
+
         res = samples.aggregate(
             [
                 {
                     "$vectorSearch": {
                         "queryVector": text_embed,
-                        "path": "embedding",
+                        "path": "index.embedding",
                         # This could become a problem.
                         "numCandidates": 1000 + start + count,
                         "index": "vector_index",
@@ -44,16 +45,25 @@ class Index:
                         "exact": False,
                         "filter": {
                             "$and": [
-                                *[{"tags": {"$eq": tag}} for tag in query.tags],
-                                {"tags": {"$eq": "SLICE:SAMPLE"}},
+                                {"index.tags": {"$eq": "SLICE:SAMPLE"}},
+                                *[{"index.tags": {"$eq": tag}} for tag in query.tags],
+                                *[
+                                    {f"index.btags.{k}": {"$gt": BTag.get_bounds(v)[0]}}
+                                    for k, v in query.btags.items()
+                                ],
+                                *[
+                                    {f"index.btags.{k}": {"$lt": BTag.get_bounds(v)[1]}}
+                                    for k, v in query.btags.items()
+                                ],
                             ]
                         },
                     }
                 },
                 {
                     "$project": {
+                        "_id": 1,
                         "path": 1,
-                        "name": 1,
+                        "display": 1,
                         "score": {"$meta": "vectorSearchScore"},
                     }
                 },
@@ -86,7 +96,7 @@ class Index:
                 {
                     "$vectorSearch": {
                         "queryVector": audio_embed,
-                        "path": "embedding",
+                        "path": "index.embedding",
                         # This could become a problem.
                         "numCandidates": 1000 + start + count,
                         "index": "vector_index",
@@ -96,8 +106,9 @@ class Index:
                 },
                 {
                     "$project": {
+                        "_id": 1,
                         "path": 1,
-                        "name": 1,
+                        "display": 1,
                         "score": {"$meta": "vectorSearchScore"},
                     }
                 },

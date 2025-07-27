@@ -109,13 +109,33 @@ This will take A LONG TIME.
 
             embedding = model.embed_audio(absolute_path)
 
+            active_tags = assignTags(absolute_path, sample_dir, tags)
+            active_btags = assignBTags(btags, embedding=embedding)
+
             db["slice"]["audiosamples"].insert_one(
                 {
                     "path": absolute_path,
-                    "name": name,
-                    "embedding": embedding,
-                    "tags": [t.id for t in assignTags(absolute_path, sample_dir, tags)],
-                    "btags": assignBTags(btags, embedding=embedding),
+                    "display": {
+                        "name": name,
+                        "tags": [
+                            {"id": tag.id, "name": tag.name} for tag in active_tags
+                        ],
+                        "btags": [
+                            {
+                                "id": tag.id,
+                                "name": tag.name,
+                                "name_A": tag.name_A,
+                                "name_B": tag.name_B,
+                                "value": value,
+                            }
+                            for tag, value in active_btags.items()
+                        ],
+                    },
+                    "index": {
+                        "embedding": embedding,
+                        "tags": [t.id for t in active_tags],
+                        "btags": {k.id: v for k, v in active_btags.items()},
+                    },
                 }
             )
 
@@ -141,11 +161,14 @@ This will take A LONG TIME.
                     {
                         "type": "vector",
                         "numDimensions": 512,
-                        "path": "embedding",
+                        "path": "index.embedding",
                         "similarity": "dotProduct",
                     },
-                    {"type": "filter", "path": "tags"},
-                    *[{"type": "filter", "path": f"btags.{bt.id}"} for bt in btags],
+                    {"type": "filter", "path": "index.tags"},
+                    *[
+                        {"type": "filter", "path": f"index.btags.{bt.id}"}
+                        for bt in btags
+                    ],
                 ]
             },
             name="vector_index",

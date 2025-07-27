@@ -17,7 +17,7 @@
       class="w-screen flex flex-col items-center px-72"
       x-data="{
         query: (new URL(window.location.href).searchParams.get('query')) ?? '',
-        btags: [],
+        btags: JSON.parse(new URL(window.location.href).searchParams.get('btags')) ?? [],
         tags: false,
         addedTags: JSON.parse(new URL(window.location.href).searchParams.get('tags')) ?? [],
         tquery: '',
@@ -31,7 +31,7 @@
         fetchTags().then(json=>{
           tags = json.results;
         })
-        fetchBTags().then(json=>{
+        if(!btags.length) fetchBTags().then(json=>{
           btags = json.results.map(x=>({...x, value:0.5}));
         })
 
@@ -43,11 +43,11 @@
           type="text"
           placeholder="ringing future bass snare"
           x-model="query"
-          x-on:keyup.enter="submitQuery(query)"
+          x-on:keyup.enter="submitQuery(query, addedTags, btags)"
         />
         <div
           class="bg-gray-700 rounded-full w-12 h-12 grid place-content-center -ml-14 mt-1 cursor-pointer"
-          x-on:click="submitQuery(query, addedTags)"
+          x-on:click="submitQuery(query, addedTags, btags)"
         >
           <svg
             class="w-8 h-8"
@@ -69,13 +69,12 @@
         <template x-for="tag in btags" :key="tag.id">
           <div
             class="bg-gray-700 text-white p-1 px-2 font-sm rounded-full text-sm flex flex-row items-center cursor-pointer gap-1"
-               >
+          >
             <span x-text="tag.name"></span>
             :
             <span x-text="(tag.value * 100).toFixed(0) + '%'"></span>
           </div>
         </template>
-
 
         <template x-for="tag in addedTags" :key="tag.id">
           <div
@@ -181,9 +180,22 @@
           <div class="flex flex-row items-start">
             <template x-for="btag in btags" :key="btag.id">
               <div class="flex flex-col items-center">
-                <span x-text="btag.name_A"></span>
-                  <input type="range" orient="vertical" style="writing-mode: vertical-lr; appearance: slider-vertical; direction: rtl; vertical-align: bottom" x-model="btag.value" min="0" max="1" step="0.01">
                 <span x-text="btag.name_B"></span>
+                <input
+                  type="range"
+                  orient="vertical"
+                  style="
+                    writing-mode: vertical-lr;
+                    appearance: slider-vertical;
+                    direction: rtl;
+                    vertical-align: bottom;
+                  "
+                  x-model="btag.value"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                />
+                <span x-text="btag.name_A"></span>
               </div>
             </template>
           </div>
@@ -225,7 +237,7 @@
       ></h2>
 
       <div
-        x-show="resultCount"
+        x-show="!loading && !error"
         x-transition
         class="w-full flex flex-col items-center"
       >
@@ -235,7 +247,7 @@
         <div class="flex flex-row gap-12 p-12">
           <div class="flex flex-col items-left">
             <template x-for="sample in samples">
-              <h2 x-text="sample.name" class="p-2"></h2>
+              <h2 x-text="sample.display.name" class="p-2 h-10"></h2>
             </template>
           </div>
           <div class="flex flex-col items-left">
@@ -244,6 +256,7 @@
                 controls
                 x-on:mouseenter="$el.play()"
                 x-on:mouseleave="$el.pause()"
+                class="h-10"
               >
                 <!--                         yeeeeeeee, production-ready code                  -->
                 <source
@@ -255,9 +268,25 @@
           </div>
           <div class="flex flex-col items-left">
             <template x-for="sample in samples">
+              <div class="flex flex-row gap-2 h-10 p-2 align-start">
+                <template x-for="tag in sample.display.btags" :key="tag.id">
+                  <div
+                    class="bg-gray-700 text-white p-1 px-2 font-sm rounded-full text-sm flex flex-row items-center gap-1"
+                  >
+                    <span x-text="tag.name"></span>
+                    :
+                    <span x-text="(tag.value * 100).toFixed(0) + '%'"></span>
+                  </div>
+                </template>
+              </div>
+            </template>
+          </div>
+
+          <div class="flex flex-col items-left">
+            <template x-for="sample in samples">
               <a
                 x-bind:href="AUDIO_URL+sample.path.replace('#', '%23')"
-                class="font-ultralight text-gray-600 p-2"
+                class="font-ultralight text-gray-600 p-2 h-10"
                 download
                 >download</a
               >
@@ -267,7 +296,7 @@
             <template x-for="sample in samples">
               <a
                 x-bind:href="'/similar?id=' + sample._id"
-                class="font-ultralight text-gray-600 p-2"
+                class="font-ultralight text-gray-600 p-2 h-10"
                 >find similar</a
               >
             </template>

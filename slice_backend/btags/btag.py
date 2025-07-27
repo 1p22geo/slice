@@ -18,3 +18,8 @@ class BTag:
         self, abs_path: str | None = None, embedding: List[float] | None = None
     ) -> float:
         raise NotImplementedError()
+
+    @staticmethod
+    def get_bounds(value: float):
+        q = (0.5 - abs(0.5 - value)) * 0.5
+        return (max(value - q, 0), min(value + q, 1))

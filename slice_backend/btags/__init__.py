@@ -28,4 +28,4 @@ def assignBTags(
     abs_path: str | None = None,
     embedding: List[float] | None = None,
 ):
-    return {t.id: t.get_value(abs_path=abs_path, embedding=embedding) for t in btags}
+    return {t: t.get_value(abs_path=abs_path, embedding=embedding) for t in btags}
