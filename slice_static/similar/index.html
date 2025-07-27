@@ -37,9 +37,15 @@
         x-transition
         class="w-full flex flex-col items-center font-mono"
       >
-        <h2 class="self-start text-gray-600 ml-8 w-fit">
+        <div class="flex flex-row w-full px-8 justify-between">
+        <h2 class="self-start text-gray-600 w-fit">
           <span x-text="resultCount"></span> samples loaded
         </h2>
+        <a x-bind:href="'/graph/?id='+new URL(window.location.href).searchParams.get('id')" class="self-end text-gray-600 w-fit">
+          Show graph
+        </a>
+        </div>
+
         <div class="flex flex-row gap-4 px-8">
           <div class="flex flex-col items-left">
             <template x-for="sample in samples">
@@ -104,7 +110,6 @@
       </div>
       <h2
         class="text-xl text-gray-600 p-12 mb-24"
-        id="loading"
         x-init="
         setInterval(()=>{
         if(isElementInViewport($el) && hasMore && !pending){

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title></title>
+    <script src="../js/config.js"></script>
+    <script src="../js/util.js"></script>
+    <script src="https://cdn.tailwindcss.com/"></script>
+    <script defer src="../js/graph.js"></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+  </head>
+  <body>
+    <div x-data="{loading: true, nodes: [], links: {}}" @loaded.window="loading = false" x-init="load(nodes, links)">
+      <canvas class="w-screen h-screen absolute left-0 top-0" x-bind:width="window.innerWidth" x-bind:height="window.innerHeight"></canvas>
+      <div class="w-screen h-screen absolute left-0 top-0">
+        <template x-for="node in nodes" :key="node._id">
+          <div class="absolute flex flex-col items-center" x-bind:id="node._id">
+            <a class="w-12 h-12 bg-gray-700 rounded-full block -ml-6 -mt-6" x-bind:href="'/similar?id=' + node._id"></a>
+            <span x-text="node.display.name" class="absolute w-72 text-center block"></span>
+          </div>
+        </template>
+      </div>
+    </div>
+  </body>
+</html>
