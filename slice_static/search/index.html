@@ -177,7 +177,7 @@
         </div>
         <div class="flex flex-col items-center">
           <h2 class="text-2xl">Character</h2>
-          <div class="flex flex-row items-start">
+          <div class="flex flex-row justify-evenly w-full">
             <template x-for="btag in btags" :key="btag.id">
               <div class="flex flex-col items-center">
                 <span x-text="btag.name_B"></span>
@@ -239,15 +239,15 @@
       <div
         x-show="!loading && !error"
         x-transition
-        class="w-full flex flex-col items-center"
+        class="w-full flex flex-col items-center font-mono"
       >
         <h2 class="self-start text-gray-600 ml-8 w-fit">
           <span x-text="resultCount"></span> samples loaded
         </h2>
-        <div class="flex flex-row gap-12 p-12">
+        <div class="flex flex-row gap-4 p-12">
           <div class="flex flex-col items-left">
             <template x-for="sample in samples">
-              <h2 x-text="sample.display.name" class="p-2 h-10"></h2>
+              <h2 x-text="sample.display.name.slice(0, 50)" class="p-2 h-10"></h2>
             </template>
           </div>
           <div class="flex flex-col items-left">
@@ -286,7 +286,7 @@
             <template x-for="sample in samples">
               <a
                 x-bind:href="AUDIO_URL+sample.path.replace('#', '%23')"
-                class="font-ultralight text-gray-600 p-2 h-10"
+                class="font-ultralight text-gray-600 h-10"
                 download
                 >download</a
               >
@@ -296,8 +296,8 @@
             <template x-for="sample in samples">
               <a
                 x-bind:href="'/similar?id=' + sample._id"
-                class="font-ultralight text-gray-600 p-2 h-10"
-                >find similar</a
+                class="font-ultralight text-gray-600 h-10"
+                >similar</a
               >
             </template>
           </div>

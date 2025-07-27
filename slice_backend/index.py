@@ -75,6 +75,7 @@ class Index:
         for sample in res:
             sample["_id"] = str(sample["_id"])
             sample["path"] = sample["path"].replace(self.sample_dir, "")
+            sample["display"]["name"] = sample["display"]["name"].replace(".wav", "")
             if not sample["path"].startswith("/"):
                 sample["path"] = "/" + sample["path"]
 
@@ -120,6 +121,7 @@ class Index:
         for sample in res:
             sample["_id"] = str(sample["_id"])
             sample["path"] = sample["path"].replace(self.sample_dir, "")
+            sample["display"]["name"] = sample["display"]["name"].replace(".wav", "")
             if not sample["path"].startswith("/"):
                 sample["path"] = "/" + sample["path"]
 
