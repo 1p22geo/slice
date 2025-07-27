@@ -6,7 +6,7 @@ function submitQuery(query, tags, btags) {
   window.location.replace(url);
 }
 
-async function request() {
+async function request(page = 0) {
   const query = new URL(window.location.href).searchParams.get("query");
   const res = await fetch(`${API_URL}/api/samples/search`, {
     body: JSON.stringify({
@@ -17,7 +17,7 @@ async function request() {
       btags:
         JSON.parse(new URL(window.location.href).searchParams.get("btags")) ??
         [],
-      start: 0,
+      start: page * 10,
       count: 10,
     }),
     method: "POST",
