@@ -144,7 +144,7 @@ This will take A LONG TIME.
                         "path": "embedding",
                         "similarity": "dotProduct",
                     },
-                    {"type": "filter", "path": "estimated_document_counts"},
+                    {"type": "filter", "path": "tags"},
                     *[{"type": "filter", "path": f"btags.{bt.id}"} for bt in btags],
                 ]
             },
